@@ -155,6 +155,8 @@ function my_custom_inline_styles_scripts() {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          text-align: center;
+          margin-top: 30px;
         }
         .step-icon {
           font-size: 3rem;
@@ -162,9 +164,13 @@ function my_custom_inline_styles_scripts() {
         }
         
         .step-title {
-          font-weight: bold;
+          font-weight: 500;
           margin-top: 10px;
-          font-size: 1.1rem;
+          font-size: 1.05rem;
+        }
+        .step.active .step-title{
+          font-weight: 600;
+          color: #4dc1ec;
         }
         
         .step-content {
@@ -175,19 +181,18 @@ function my_custom_inline_styles_scripts() {
           display: block;
         }
         
-        .step-indicator {
-          text-align: center;
-          margin-bottom: 30px;
-        }
-        
         .step {
           display: inline-block;
           width: 22%;
           text-align: center;
         }
+        .step .step-icon{
+            font-weight: 200;
+         }
         
         .step.active .step-icon {
           color: #4dc1ec;
+          font-weight:600;
         }
         
         .hd-sub-text {
@@ -196,7 +201,6 @@ function my_custom_inline_styles_scripts() {
           font-weight: 800;
         }
         .btn-group {
-          margin-top: 20px;
           gap: 15px;
           width: 100%;
           justify-content: start;
@@ -302,6 +306,11 @@ function my_custom_inline_styles_scripts() {
             confirmButtonColor: '#4dc1ec'
         });
     }
+    document.getElementById("place_order")?.addEventListener("click", function () {
+        localStorage.removeItem('userSelection'); 
+        localStorage.removeItem('selectedTime');
+        localStorage.setItem('currentStep', 1); 
+    });
 
     
     showStep(currentStep);
@@ -638,7 +647,7 @@ function display_car_size_and_category_selection() {
 
 .ltb-car-size-input-media {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 10px !important;
     margin-bottom: 10px;
 }
 
@@ -723,33 +732,39 @@ function display_car_size_and_category_selection() {
     display: flex;
     flex-direction: column;
     align-items: center;
-        width: 100%;
-margin-block: 20px;
+    width: 100%;
 }
 
 .categories-wrapper {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* تقسيم إلى 4 أعمدة */
-    gap: 20px; /* مسافة بين العناصر */
-    width: 100%; /* جعل العرض كاملًا */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px; 
+    width: 100%; 
 }
 
 .category-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: #fff;
+    background: #4DC1EC;
+    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);*/
+    /*transition:  box-shadow 0.3s ease;*/
+    width: 100%; 
+    padding: 15px;
+    color: white; 
     border: none;
-    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease; */
+    font-size: 16px; 
+    font-weight: 600; 
+    text-align: center; 
     cursor: pointer;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .category-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);*/
 }
 
 .category-btn img {
@@ -792,24 +807,6 @@ margin-block: 20px;
             border: 2px solid #4DC1EC;
             background-color: #333;
         }
-.category-btn {
-    width: 100%; /* العرض بالكامل */
-    padding: 15px;
-    background-color: #484848; /* اللون الرمادي الداكن للأزرار غير المختارة */
-    color: white; /* النص باللون الأبيض */
-    border: none;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* تأثير سلس للتغيير */
-    font-size: 16px; /* حجم النص */
-    font-weight: bold; /* النص بخط عريض */
-    text-align: center; /* توسيط النص */
-    cursor: pointer;
-}
-
-.category-btn:hover {
-    transform: scale(1.02); /* تأثير تكبير طفيف عند التمرير */
-}
 
 .category-btn.selected {
     background-color: #4DC1EC; /* اللون اللبني للأزرار المختارة */
@@ -947,36 +944,6 @@ margin-block: 20px;
 
     </style>
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const regionSelect = document.getElementById('region-select');
-        const branchSelect = document.getElementById('branch-select');
-
-    // تحديث حقل "المنطقة" في Checkout عند تغيير القائمة المنسدلة للمنطقة
-    regionSelect.addEventListener('change', function () {
-        const selectedRegion = this.value;
-
-        // العثور على حقل Checkout الخاص بـ "المنطقة" وتحديث قيمته
-        const regionField = document.getElementById('billing_region');
-        if (regionField) {
-            regionField.value = selectedRegion; // تعيين القيمة
-        } else {
-            console.error('حقل المنطقة (billing_region) غير موجود في Checkout.');
-        }
-    });
-
-    // تحديث حقل "الفرع" في Checkout عند تغيير القائمة المنسدلة للفرع
-    branchSelect.addEventListener('change', function () {
-        const selectedBranch = this.value;
-
-        // العثور على حقل Checkout الخاص بـ "الفرع" وتحديث قيمته
-        const branchField = document.getElementById('billing_branch');
-        if (branchField) {
-            branchField.value = selectedBranch; // تعيين القيمة
-        } else {
-            console.error('حقل الفرع (billing_branch) غير موجود في Checkout.');
-        }
-    });
-});
     // Function to handle time button selection
     document.addEventListener('DOMContentLoaded', () => {
     const timeButtons = document.querySelectorAll('.time-btn');
@@ -1021,12 +988,9 @@ margin-block: 20px;
     document.addEventListener('DOMContentLoaded', function () {
     const regionSelect = document.getElementById('region-select');
     const branchSelect = document.getElementById('branch-select');
-
-    // تحديث حقول Checkout عندما تتغير القيمة في القائمة المنسدلة الخاصة بالمنطقة
     regionSelect.addEventListener('change', function () {
         const selectedRegion = this.value;
 
-        // البحث عن حقل Checkout الخاص بالمنطقة وتحديثه
         const regionField = document.querySelector('input[name="billing_region"]');
         if (regionField) {
             regionField.value = selectedRegion; // تعيين القيمة
@@ -1035,7 +999,6 @@ margin-block: 20px;
         console.log('تم تحديث المنطقة في Checkout:', selectedRegion);
     });
 
-    // تحديث حقول Checkout عندما تتغير القيمة في القائمة المنسدلة الخاصة بالفرع
     branchSelect.addEventListener('change', function () {
         const selectedBranch = this.value;
 
@@ -1048,6 +1011,8 @@ margin-block: 20px;
         console.log('تم تحديث الفرع في Checkout:', selectedBranch);
     });
 });
+
+
     function showGuide() {
         document.getElementById('car-size-guide-modal').style.display = 'flex';
         document.getElementById('modal-view-1').style.display = 'block';
@@ -1074,9 +1039,13 @@ margin-block: 20px;
                     card.classList.add('selected');
                     card.classList.add('in-cart');
                     Swal.fire({
+                        toast: true, 
+                        position: 'top-end',
                         icon: 'success',
-                        title: 'تمت الإضافة',
-                        text: 'تمت إضافة المنتج إلى السلة!'
+                         showConfirmButton: false,
+                        timer: 5000,
+                        // title: 'تمت الإضافة',
+                        title: 'تمت إضافة الخدمة إلى السلة!' 
                     });
                 } else {
                     card.classList.remove('selected');
@@ -1171,14 +1140,14 @@ margin-block: 20px;
             const checkoutSection = document.getElementById('checkout-section');
             console.log('حالة السلة:', response); // للتحقق من الاستجابة
 
-            if (response.success) {
-                if (response.data.has_items) {
-                    checkoutSection.style.display = 'block'; }
-                // } else {
-                //     checkoutSection.style.display = 'none'; // إخفاء Checkout
-                //     // تم إزالة التنبيه الخاص بالسلة الفارغة
-                // }
-            }
+            // if (response.success) {
+            //     if (response.data.has_items) {
+            //         checkoutSection.style.display = 'block'; }
+            //     // } else {
+            //     //     checkoutSection.style.display = 'none'; // إخفاء Checkout
+            //     //     // تم إزالة التنبيه الخاص بالسلة الفارغة
+            //     // }
+            // }
         },
         error: function () {
             console.error('خطأ في التحقق من حالة السلة.');
@@ -1232,6 +1201,7 @@ margin-block: 20px;
 
         // إظهار رسالة تأكيد
         Swal.fire({
+            
             icon: 'success',
             title: 'تم اختيار الوقت',
             text: `الوقت: ${this.dataset.time}`
@@ -1239,53 +1209,53 @@ margin-block: 20px;
     });
 });
  
-    document.getElementById('branch-select').addEventListener('change', function () {
-    if (this.value) {
-        // أظهر قسم التقويم والوقت
-        document.getElementById('calendar-time-container').style.display = 'flex';
+//     document.getElementById('branch-select').addEventListener('change', function () {
+//     if (this.value) {
+//         // أظهر قسم التقويم والوقت
+//         document.getElementById('calendar-time-container').style.display = 'flex';
 
-        // تفعيل التقويم
-        jQuery('#datepicker').datepicker({
-            minDate: 0, // بدءًا من اليوم
-            maxDate: "+1M", // حتى شهر من الآن
-            beforeShowDay: function (date) {
-                let day = date.getDay();
-                // تعطيل يوم الجمعة
-                return [day !== 5, ""];
-            },
-            onSelect: function (dateText) {
-                // إظهار رسالة عند اختيار التاريخ
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم اختيار التاريخ',
-                    text: `التاريخ: ${dateText}`
-                });
-            }
-        });
-    }
-});
-    document.getElementById('branch-select').addEventListener('change', function () {
-    if (this.value) {
-        document.getElementById('calendar-container').style.display = 'block';
-        document.getElementById('time-container').style.display = 'block';
+//         // تفعيل التقويم
+//         jQuery('#datepicker').datepicker({
+//             minDate: 0, // بدءًا من اليوم
+//             maxDate: "+1M", // حتى شهر من الآن
+//             beforeShowDay: function (date) {
+//                 let day = date.getDay();
+//                 // تعطيل يوم الجمعة
+//                 return [day !== 5, ""];
+//             },
+//             onSelect: function (dateText) {
+//                 // إظهار رسالة عند اختيار التاريخ
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'تم اختيار التاريخ',
+//                     text: `التاريخ: ${dateText}`
+//                 });
+//             }
+//         });
+//     }
+// });
+//     document.getElementById('branch-select').addEventListener('change', function () {
+//     if (this.value) {
+//         document.getElementById('calendar-container').style.display = 'block';
+//         document.getElementById('time-container').style.display = 'block';
 
-        jQuery('#datepicker').datepicker({
-            minDate: 0,
-            maxDate: "+1M",
-            beforeShowDay: function (date) {
-                let day = date.getDay();
-                return [day !== 5, ""];
-            },
-            onSelect: function (dateText) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم اختيار التاريخ',
-                    text: `التاريخ: ${dateText}`
-                });
-            }
-        });
-    }
-});
+//         jQuery('#datepicker').datepicker({
+//             minDate: 0,
+//             maxDate: "+1M",
+//             beforeShowDay: function (date) {
+//                 let day = date.getDay();
+//                 return [day !== 5, ""];
+//             },
+//             onSelect: function (dateText) {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'تم اختيار التاريخ',
+//                     text: `التاريخ: ${dateText}`
+//                 });
+//             }
+//         });
+//     }
+// });
 
     let branchesByRegion = {
     "الرياض": [
@@ -1329,7 +1299,11 @@ margin-block: 20px;
 
     document.getElementById('branch-select').addEventListener('change', function() {
     if (this.value) {
+        document.getElementById('calendar-time-container').style.display = 'flex';
         document.getElementById('calendar-container').style.display = 'block';
+        document.getElementById('time-container').style.display = 'block';
+
+        
 
         jQuery('#datepicker').datepicker({
             minDate: 0,
@@ -1341,9 +1315,16 @@ margin-block: 20px;
             },
             onSelect: function(dateText) {
                 Swal.fire({
+                    toast: true,
+                    position: 'top-end',
                     icon: 'success',
-                    title: 'تم اختيار التاريخ',
-                    text: `التاريخ: ${dateText}`
+                    // title: 'تم اختيار التاريخ',
+                    text: `تم اختيار التاريخ: ${dateText}`  ,
+                    timer: 5000,
+                    showConfirmButton: false,
+
+                
+                    
                 });
             }
         });
@@ -1361,9 +1342,15 @@ margin-block: 20px;
             console.log(selectedCarSize)
             // SweetAlert2 Message
             Swal.fire({
+                 toast: true,
+                 position: 'top-end',
                 icon: 'success',
-                title: 'تم اختيار حجم السيارة',
-                text: `حجم السيارة: ${selectedCarSize}`
+                // title: 'تم اختيار حجم السيارة',
+                text: ` تم اختيار حجم السيارة: ${selectedCarSize}`,
+                showConfirmButton: false,
+                timer: 5000
+            
+                
             });
 
             fetchFilteredProducts();
@@ -1377,9 +1364,13 @@ margin-block: 20px;
 
             // SweetAlert2 Message
             Swal.fire({
+                toast: true,
+                position: 'top-end',
                 icon: 'success',
-                title: 'تم اختيار الفئة',
-                text: `الفئة: ${selectedCategory}`
+                // title: 'تم اختيار الفئة',
+                text: `تم اختيار الفئة : ${selectedCategory}`, 
+                showConfirmButton: false,
+                timer: 5000
             });
 
             fetchFilteredProducts();
@@ -1916,3 +1907,4 @@ require FTECH_THEME_DRI . '/inc/breadcrumb-init.php';
 if (defined('JETPACK__VERSION')) {
 	require FTECH_THEME_DRI . '/inc/jetpack.php';
 }
+
