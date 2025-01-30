@@ -1,18 +1,25 @@
 <?php
 // wp_enqueue_script('custom-js', get_template_directory_uri() . '/js/custom.js', array(), time(), true);
 // wp_enqueue_style('custom-css', get_template_directory_uri() . '/css/custom.css', array(), time());
-
-add_action('wp_enqueue_scripts', 'enqueue_woocommerce_ajax');
-function enqueue_woocommerce_ajax() {
-    if (is_checkout() || is_cart()) {
+function enable_cart_fragments() {
+    if (is_checkout()) {
         wp_enqueue_script('wc-cart-fragments');
     }
 }
+add_action('wp_enqueue_scripts', 'manage_cart_fragments');
+function manage_cart_fragments() {
+    if (is_checkout() || is_cart()) {
+        wp_enqueue_script('wc-cart-fragments');
+    } else {
+        wp_dequeue_script('wc-cart-fragments');
+    }
+}
+
 
 add_filter('woocommerce_checkout_fields', 'custom_checkout_fields');
 function custom_checkout_fields($fields) {
     $fields['billing']['billing_region'] = array(
-        'type' => 'text',
+        'type' => 'text',   
         'label' => 'المنطقة',
         'placeholder' => 'أدخل اسم المنطقة',
         'required' => true, // جعل الحقل مطلوبًا
@@ -191,7 +198,9 @@ function my_custom_inline_styles_scripts() {
         .btn-group {
           margin-top: 20px;
           gap: 15px;
-          justify-content: space-between !important;
+          width: 100%;
+          justify-content: start;
+          
         }
         .custom-btn {
           width: 100px;
@@ -212,7 +221,9 @@ function my_custom_inline_styles_scripts() {
           border: 1px solid #1c1917;
           transition: all ease-in-out 0.4s;
         }
-        
+        .d-none{
+            display: none;
+        }
         @media (max-width: 768px) {
           .hd-sub-text {
             font-size: 25px;
@@ -233,54 +244,111 @@ function my_custom_inline_styles_scripts() {
 
     </style>
    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let currentStep = localStorage.getItem('currentStep') ? parseInt(localStorage.getItem('currentStep')) : 1;
-        const totalSteps = 4;
+   document.addEventListener('DOMContentLoaded', function () {
+    let currentStep = localStorage.getItem('currentStep') ? parseInt(localStorage.getItem('currentStep')) : 1;
+    const totalSteps = 4;
+    
+   
+    function getUserCarSelection() {
+        return JSON.parse(localStorage.getItem('userSelection')) || {}; 
+    }   
+    function isProductCardSelected() {
+        return document.querySelector('.product-card.selected') !== null;
+    }
+     function getSelectedTime() {
+        return localStorage.getItem('selectedTime');
+    }
 
-        function showStep(step) {
-            document.querySelectorAll(".step-content").forEach((content) => {
-                content.classList.remove("active");
-            });
-            document.querySelector(`[data-step="${step}"]`).classList.add("active");
+    function showStep(step) {
+        document.querySelectorAll(".step-content").forEach((content) => {
+            content.classList.remove("active");
+        });
+        document.querySelector(`[data-step="${step}"]`).classList.add("active");
 
-            document.querySelectorAll(".step").forEach((stepEl, index) => {
-                stepEl.classList.toggle("active", index + 1 === step);
-            });
-
-            localStorage.setItem('currentStep', step); 
-        }
-
-        function toggleButtons() {
-            const nextBtn = document.getElementById("nextBtn");
-            const bookNowBtn = document.getElementById("bookNowBtn");
-
-            if (currentStep === totalSteps) {
-                nextBtn.classList.add("d-none");
-                bookNowBtn.classList.remove("d-none");
-            } else {
-                nextBtn.classList.remove("d-none");
-                bookNowBtn.classList.add("d-none");
-            }
-        }
-
-        // Initialize the step on page load
-        showStep(currentStep);
-        toggleButtons();
-
-        document.getElementById("nextBtn").addEventListener("click", function () {
-            if (currentStep < totalSteps) {
-                showStep(++currentStep);
-            }
-            toggleButtons();
+        document.querySelectorAll(".step").forEach((stepEl, index) => {
+            stepEl.classList.toggle("active", index + 1 === step);
         });
 
-        document.getElementById("prevBtn").addEventListener("click", function () {
-            if (currentStep > 1) {
-                showStep(--currentStep);
-            }
-            toggleButtons();
+        localStorage.setItem('currentStep', step);
+        toggleButtons(); 
+    }
+
+    function toggleButtons() {
+        const nextBtn = document.getElementById("nextBtn");
+        const prevBtn = document.getElementById("prevBtn");
+        const userCarSelection = getUserCarSelection();
+        
+        if (currentStep === 1) {
+            prevBtn.classList.add("d-none");
+        } else {
+            prevBtn.classList.remove("d-none");
+        }
+
+        if (currentStep === totalSteps) {
+            nextBtn.classList.add("d-none");
+            
+        } else {
+            nextBtn.classList.remove("d-none");
+        }
+    }
+
+   
+    function showSweetAlert(message) {
+        Swal.fire({
+            title: 'الرجاء الاختيار',
+            text: message,
+            icon: 'warning',
+            confirmButtonText: 'موافق',
+            confirmButtonColor: '#4dc1ec'
         });
+    }
+
+    
+    showStep(currentStep);
+
+    
+    document.getElementById("nextBtn").addEventListener("click", function () {
+        const userCarSelection = getUserCarSelection();
+        console.log(userCarSelection)
+
+        // Step 1: Check if carSize is selected
+        if (currentStep === 1 && !userCarSelection.carSize) {
+            showSweetAlert('يرجى اختيار حجم السيارة');
+            return; 
+        }
+
+        // Step 2: Check if category is selected
+         if (currentStep === 2) {
+            if (!userCarSelection.category || !userCarSelection) {
+                showSweetAlert('يرجى اختيار الفئة');
+                return; 
+            }
+            if (!isProductCardSelected()) {
+                showSweetAlert('يرجى اختيار خدمة  ');
+                return; 
+            }
+        }
+        
+        if (currentStep === 3) {
+            const selectedTime = getSelectedTime();
+            if (!selectedTime) {
+                showSweetAlert('يرجى اختيار اسم الفرع و التاريخ و الوقت');
+                return; 
+            }
+        }
+
+        if (currentStep < totalSteps) {
+            showStep(++currentStep);
+        }
     });
+
+    document.getElementById("prevBtn").addEventListener("click", function () {
+        if (currentStep > 1) {
+            showStep(--currentStep);
+        }
+    });
+});
+
 </script>
 
     <?php
@@ -327,20 +395,22 @@ function display_car_size_and_category_selection() {
                             </div>
                             <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
                         </div>
-                        <div id="ltb-car-size-input" class="car-size-container">
+                       <div id="ltb-car-size-input" class="car-size-container">
                             <input type="hidden" id="selected_car_size" name="selected_car_size" value="">
-                            <div class="ltb-car-size-input-option" data-car-size="سيارة صغيرة" onclick="selectCarSize(this)">
-                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-3copy.webp">
-                            <span class="car-size-label"><strong>صغير</strong></span>
+                            <button type="button" class="ltb-car-size-input-option" data-car-size="سيارة صغيرة" onclick="selectCarSize(this)">
+        <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-3copy.webp">
+        <span class="car-size-label"><strong>صغير</strong></span>
+    </button>
+                            <button type="button" class="ltb-car-size-input-option" data-car-size="سيارة وسط" onclick="selectCarSize(this)">
+        <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-2copy.webp">
+        <span class="car-size-label"><strong>وسط</strong></span>
+    </button>
+                            <button type="button" class="ltb-car-size-input-option" data-car-size="سيارة كبيرة" onclick="selectCarSize(this)">
+        <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-copy-copy.webp">
+        <span class="car-size-label"><strong>كبير</strong></span>
+    </button>
                         </div>
-                        <div class="ltb-car-size-input-option" data-car-size="سيارة وسط" onclick="selectCarSize(this)">
-                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-2copy.webp">
-                            <span class="car-size-label"><strong>وسط</strong></span>
-                        </div>
-                        <div class="ltb-car-size-input-option" data-car-size="سيارة كبيرة" onclick="selectCarSize(this)">
-                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-copy-copy.webp">
-                            <span class="car-size-label"><strong>كبير</strong></span>
-                        </div>
+
                     </div>
                     </div>
                      <!--ختار الخدمة المطلوبة-->
@@ -356,26 +426,30 @@ function display_car_size_and_category_selection() {
                                     <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
                                 </div>                   
                             <div class="categories-wrapper">
-                                <!-- حماية -->
-                                <button class="category-btn" data-category="حماية" onclick="selectCategory(this)">
-                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/PPF-icon-3.svg" alt="حماية">
-                                    <span>حماية</span>
-                                </button>
-                                <!-- عازل حراري نانوسيراميك -->
-                                <button class="category-btn" data-category="عازل حراري نانوسيراميك" onclick="selectCategory(this)">
-                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/TPF-icon-3.svg" alt="عازل حراري نانوسيراميك">
-                                    <span>عازل حراري نانوسيراميك</span>
-                                </button>
-                                <!-- نانو سيراميك -->
-                                <button class="category-btn" data-category="نانو سيراميك" onclick="selectCategory(this)">
-                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/Nano-icon-3.svg" alt="نانو سيراميك">
-                                    <span>نانو سيراميك</span>
-                                </button>
-                                <!-- تلميع -->
-                                <button class="category-btn" data-category="تلميع" onclick="selectCategory(this)">
-                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/polish-icon-2.svg" alt="تلميع">
-                                    <span>تلميع</span>
-                                </button>
+                              <!-- حماية -->
+<button class="category-btn" data-category="حماية" onclick="selectCategory(this)" type="button">
+    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/PPF-icon-3.svg" alt="حماية">
+    <span>حماية</span>
+</button>
+
+<!-- عازل حراري نانوسيراميك -->
+<button class="category-btn" data-category="عازل حراري نانوسيراميك" onclick="selectCategory(this)" type="button">
+    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/TPF-icon-3.svg" alt="عازل حراري نانوسيراميك">
+    <span>عازل حراري نانوسيراميك</span>
+</button>
+
+<!-- نانو سيراميك -->
+<button class="category-btn" data-category="نانو سيراميك" onclick="selectCategory(this)" type="button">
+    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/Nano-icon-3.svg" alt="نانو سيراميك">
+    <span>نانو سيراميك</span>
+</button>
+
+<!-- تلميع -->
+<button class="category-btn" data-category="تلميع" onclick="selectCategory(this)" type="button">
+    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/polish-icon-2.svg" alt="تلميع">
+    <span>تلميع</span>
+</button>
+
                             </div>
                         </div>
                         <div id="filtered-products" class="filtered-products" style="margin-top: 30px;">                
@@ -418,17 +492,18 @@ function display_car_size_and_category_selection() {
                             <div id="time-container" style="text-align: center;">
                                 <h4 style="color: white;">الوقت</h4>
                                 <div id="am-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px;">
-                                    <button class="time-btn" data-time="9:00 AM">AM 9:00</button>
-                                    <button class="time-btn" data-time="10:00 AM">AM 10:00</button>
-                                    <button class="time-btn" data-time="11:00 AM">AM 11:00</button>
-                                </div>
-                                <div id="pm-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                                    <button class="time-btn" data-time="4:00 PM">PM 4:00</button>
-                                    <button class="time-btn" data-time="5:00 PM">PM 5:00</button>
-                                    <button class="time-btn" data-time="6:00 PM">PM 6:00</button>
-                                    <button class="time-btn" data-time="7:00 PM">PM 7:00</button>
-                                    <button class="time-btn" data-time="8:00 PM">PM 8:00</button>
-                                </div>
+    <button class="time-btn" data-time="9:00 AM" type="button">AM 9:00</button>
+    <button class="time-btn" data-time="10:00 AM" type="button">AM 10:00</button>
+    <button class="time-btn" data-time="11:00 AM" type="button">AM 11:00</button>
+</div>
+<div id="pm-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+    <button class="time-btn" data-time="4:00 PM" type="button">PM 4:00</button>
+    <button class="time-btn" data-time="5:00 PM" type="button">PM 5:00</button>
+    <button class="time-btn" data-time="6:00 PM" type="button">PM 6:00</button>
+    <button class="time-btn" data-time="7:00 PM" type="button">PM 7:00</button>
+    <button class="time-btn" data-time="8:00 PM" type="button">PM 8:00</button>
+</div>
+
                             </div>
                         </div>
                     </div>
@@ -452,13 +527,6 @@ function display_car_size_and_category_selection() {
                             </button>
                             <button type="button" class="custom-btn" id="nextBtn">
                             التالي <i class="fa-solid fa-chevron-left mr-2"></i>
-                            </button>
-                            <button
-                            type="submit"
-                            class="btn-success custom-btn d-none"
-                            id="bookNowBtn"
-                            >
-                            احجز الان
                             </button>
                     </div>
                 </form>
@@ -1066,11 +1134,34 @@ margin-block: 20px;
 }
 
     
-    // استدعاء استعادة الخيارات عند تحميل الصفحة
     document.addEventListener('DOMContentLoaded', function () {
-        restoreUserSelection();
-    });
-    
+    // استرجاع البيانات المحفوظة في LocalStorage
+    let savedCarSize = localStorage.getItem('selectedCarSize');
+    let savedCategory = localStorage.getItem('selectedCategory');
+
+    // لو القيم موجودة، استدعاء المنتجات تلقائيًا بدون الحاجة لاختيار الفئة يدويًا
+    if (savedCarSize && savedCategory) {
+        selectedCarSize = savedCarSize;
+        selectedCategory = savedCategory;
+
+        // إضافة الكلاسات `selected` للعناصر المختارة
+        document.querySelectorAll('.ltb-car-size-input-option').forEach(option => {
+            if (option.getAttribute('data-car-size') === selectedCarSize) {
+                option.classList.add('selected');
+            }
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            if (btn.getAttribute('data-category') === selectedCategory) {
+                btn.classList.add('selected');
+            }
+        });
+
+        // تحميل المنتجات تلقائيًا
+        fetchFilteredProducts();
+    }
+});
+
     function updateCheckoutVisibility() {
     jQuery.ajax({
         url: '<?php echo admin_url('admin-ajax.php'); ?>',
@@ -1293,7 +1384,13 @@ margin-block: 20px;
 
             fetchFilteredProducts();
         }
-       
+//     function disable_cart_fragments() {
+//     if (!is_admin()) {
+//         wp_dequeue_script('wc-cart-fragments');
+//     }
+// }
+//     add_action('wp_enqueue_scripts', 'disable_cart_fragments', 11);
+
 
     function fetchFilteredProducts() {
     if (selectedCarSize && selectedCategory) {
@@ -1327,15 +1424,13 @@ margin-block: 20px;
         method: 'POST',
         success: function (response) {
             if (response && response.fragments) {
-                // تحديث العناصر الديناميكية
                 jQuery.each(response.fragments, function (key, value) {
                     jQuery(key).replaceWith(value);
                 });
 
                 console.log('تم تحديث WooCommerce Fragments.');
-
-                // التحقق من حالة السلة لتحديث ظهور WooCommerce Checkout
-               // updateWooCommerceCheckout();
+                
+                // updateWooCommerceCheckout();
             }
         },
         error: function () {
@@ -1343,8 +1438,8 @@ margin-block: 20px;
         }
     });
 }
+
     function updateWooCommerceCheckout() {
-    // تحديث قسم WooCommerce Checkout
     const checkoutWrapper = jQuery('.woocommerce-checkout');
     if (checkoutWrapper.length > 0) {
         checkoutWrapper.load(window.location.href + ' .woocommerce-checkout > *', function () {
@@ -1372,7 +1467,12 @@ margin-block: 20px;
     <?php
     return ob_get_clean();
 }
-
+ function disable_cart_fragments() {
+    if (!is_admin()) {
+        wp_dequeue_script('wc-cart-fragments');
+    }
+}
+    add_action('wp_enqueue_scripts', 'disable_cart_fragments', 11);
 
 // Ajax to fetch products based on car size and category
 function get_filtered_products() {
@@ -1816,4 +1916,3 @@ require FTECH_THEME_DRI . '/inc/breadcrumb-init.php';
 if (defined('JETPACK__VERSION')) {
 	require FTECH_THEME_DRI . '/inc/jetpack.php';
 }
-
