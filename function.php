@@ -1,17 +1,6 @@
 <?php
-add_action('wp_ajax_check_cart_status_and_redirect', 'check_cart_status_and_redirect');
-add_action('wp_ajax_nopriv_check_cart_status_and_redirect', 'check_cart_status_and_redirect');
-
-function check_cart_status_and_redirect() {
-    if (WC()->cart->get_cart_contents_count() > 0) {
-        wp_send_json_success(array('redirect_url' => wc_get_checkout_url()));
-    } else {
-        wp_send_json_error('السلة فارغة.');
-    }
-}
-
-wp_enqueue_script('custom-js', get_template_directory_uri() . '/js/custom.js', array(), time(), true);
-wp_enqueue_style('custom-css', get_template_directory_uri() . '/css/custom.css', array(), time());
+// wp_enqueue_script('custom-js', get_template_directory_uri() . '/js/custom.js', array(), time(), true);
+// wp_enqueue_style('custom-css', get_template_directory_uri() . '/css/custom.css', array(), time());
 
 add_action('wp_enqueue_scripts', 'enqueue_woocommerce_ajax');
 function enqueue_woocommerce_ajax() {
@@ -243,51 +232,57 @@ function my_custom_inline_styles_scripts() {
 
 
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-              let currentStep = 1;
-              const totalSteps = 4;
-            
-              document.getElementById("nextBtn").addEventListener("click", function () {
-              if (currentStep < totalSteps) {
-                showStep(++currentStep);
-              }
-              toggleButtons();
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let currentStep = localStorage.getItem('currentStep') ? parseInt(localStorage.getItem('currentStep')) : 1;
+        const totalSteps = 4;
+
+        function showStep(step) {
+            document.querySelectorAll(".step-content").forEach((content) => {
+                content.classList.remove("active");
             });
-            
-            document.getElementById("prevBtn").addEventListener("click", function () {
-              if (currentStep > 1) {
-                showStep(--currentStep);
-              }
-              toggleButtons();
+            document.querySelector(`[data-step="${step}"]`).classList.add("active");
+
+            document.querySelectorAll(".step").forEach((stepEl, index) => {
+                stepEl.classList.toggle("active", index + 1 === step);
             });
-            
-            function toggleButtons() {
-              const nextBtn = document.getElementById("nextBtn");
-              const bookNowBtn = document.getElementById("bookNowBtn");
-            
-              if (currentStep === totalSteps) {
+
+            localStorage.setItem('currentStep', step); 
+        }
+
+        function toggleButtons() {
+            const nextBtn = document.getElementById("nextBtn");
+            const bookNowBtn = document.getElementById("bookNowBtn");
+
+            if (currentStep === totalSteps) {
                 nextBtn.classList.add("d-none");
                 bookNowBtn.classList.remove("d-none");
-              } else {
+            } else {
                 nextBtn.classList.remove("d-none");
                 bookNowBtn.classList.add("d-none");
-              }
             }
-            
-            function showStep(step) {
-              document.querySelectorAll(".step-content").forEach((content) => {
-                content.classList.remove("active");
-              });
-              document.querySelector(`[data-step="${step}"]`).classList.add("active");
-            
-              document.querySelectorAll(".step").forEach((stepEl, index) => {
-                stepEl.classList.toggle("active", index + 1 === step);
-              });
-            }
+        }
 
+        // Initialize the step on page load
+        showStep(currentStep);
+        toggleButtons();
+
+        document.getElementById("nextBtn").addEventListener("click", function () {
+            if (currentStep < totalSteps) {
+                showStep(++currentStep);
+            }
+            toggleButtons();
         });
-    </script>
+
+        document.getElementById("prevBtn").addEventListener("click", function () {
+            if (currentStep > 1) {
+                showStep(--currentStep);
+            }
+            toggleButtons();
+        });
+    });
+</script>
+
     <?php
 }
 add_action('wp_footer', 'my_custom_inline_styles_scripts');
@@ -300,7 +295,7 @@ add_shortcode('car_size_and_category_selection', 'display_car_size_and_category_
 function display_car_size_and_category_selection() {
     ob_start();
     ?>
-    <section class="ltb-section ltb-step-01 ltb-section-bg-black ltb-bg-cover" id="ltb-step-01">
+     <section class="ltb-section ltb-step-01 ltb-section-bg-black ltb-bg-cover" id="ltb-step-01">
         <div class="container custom-container">
             <div id="hd-container" style="width:100%">
                 <!--Indicator -->
@@ -311,11 +306,11 @@ function display_car_size_and_category_selection() {
                       </div>
                       <div class="step">
                         <i class="fas fa-tools step-icon"></i>
-                        <div class="step-title">اختار الخدمة المطلوبة</div>
+                        <div class="step-title"> الخدمة المطلوبة</div>
                       </div>
                       <div class="step">
                         <i class="fas fa-map-marker-alt step-icon"></i>
-                        <div class="step-title">قم باختيار الوقت والفرع</div>
+                       <div class="step-title">  الوقت والفرع</div>
                       </div>
                       <div class="step">
                         <i class="fas fa-clipboard-check step-icon"></i>
@@ -346,6 +341,7 @@ function display_car_size_and_category_selection() {
                             <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-copy-copy.webp">
                             <span class="car-size-label"><strong>كبير</strong></span>
                         </div>
+                    </div>
                     </div>
                      <!--ختار الخدمة المطلوبة-->
                     <div class="step-content " data-step="2">
@@ -385,6 +381,7 @@ function display_car_size_and_category_selection() {
                         <div id="filtered-products" class="filtered-products" style="margin-top: 30px;">                
                             <div id="products-container"></div>
                         </div>
+                    </div>
                     </div>
                     <!-- اختيار المنطقة والفرع -->
                     <div class="step-content " data-step="3">
@@ -465,10 +462,10 @@ function display_car_size_and_category_selection() {
                             </button>
                     </div>
                 </form>
+                
             </div>
         </div>
     </section>
-
 
     <style>
    .time-btn {
@@ -758,29 +755,29 @@ margin-block: 20px;
 }
 
 #products-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px; /* مسافة بين العناصر */
-    justify-items: center; /* توسيط العناصر داخل الأعمدة */
-    align-items: stretch; /* تساوي الطول بين المنتجات */
+    display: flex; /* استخدام Flexbox لجعل العناصر تصطف أفقياً */
+    flex-wrap: wrap; /* السماح بالتفاف العناصر إذا ضاق العرض */
+    gap: 20px; /* المسافة بين المنتجات */
+    justify-content: space-between; /* توزيع العناصر بالتساوي */
+    box-sizing: border-box; /* التأكد من تضمين الحواف */
 }
+
 .product-card {
-    width: 100%; /* لتكون بعرض الأعمدة */
-    max-width: 300px; /* التحكم في العرض الأقصى */
-    text-align: center;
-    border: 1px solid #ddd;
+    flex: 1 1 calc(33.333% - 20px); /* عرض كل بطاقة 33.33% من العرض المتاح مع مراعاة الفراغات */
+    max-width: calc(33.333% - 20px); /* ضمان عدم تجاوز الحد الأقصى */
+    background: #fff;
+    border: 1px solid #ddd; /* إضافة حدود خفيفة */
     border-radius: 10px;
-    padding: 15px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* ظل خفيف */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .product-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: scale(1.03); /* تأثير تكبير طفيف عند التمرير */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
-
 
 
 .product-image img {
@@ -878,12 +875,13 @@ margin-block: 20px;
         grid-template-columns: repeat(1, 1fr); /* منتج واحد في الشاشات الصغيرة */
     }
 }
-    </style>
 
+
+    </style>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-    const regionSelect = document.getElementById('region-select');
-    const branchSelect = document.getElementById('branch-select');
+    document.addEventListener('DOMContentLoaded', function () {
+        const regionSelect = document.getElementById('region-select');
+        const branchSelect = document.getElementById('branch-select');
 
     // تحديث حقل "المنطقة" في Checkout عند تغيير القائمة المنسدلة للمنطقة
     regionSelect.addEventListener('change', function () {
@@ -911,9 +909,8 @@ margin-block: 20px;
         }
     });
 });
-  
-        // Function to handle time button selection
-document.addEventListener('DOMContentLoaded', () => {
+    // Function to handle time button selection
+    document.addEventListener('DOMContentLoaded', () => {
     const timeButtons = document.querySelectorAll('.time-btn');
 
     if (timeButtons.length > 0) {
@@ -953,9 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('لا توجد أزرار متوفرة لتحديد الوقت.');
     }
 });
-
-
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     const regionSelect = document.getElementById('region-select');
     const branchSelect = document.getElementById('branch-select');
 
@@ -985,24 +980,19 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('تم تحديث الفرع في Checkout:', selectedBranch);
     });
 });
-
-
-        function showGuide() {
-    document.getElementById('car-size-guide-modal').style.display = 'flex';
-    document.getElementById('modal-view-1').style.display = 'block';
-    document.getElementById('modal-view-2').style.display = 'none';
-}
-
-function showExamples() {
+    function showGuide() {
+        document.getElementById('car-size-guide-modal').style.display = 'flex';
+        document.getElementById('modal-view-1').style.display = 'block';
+        document.getElementById('modal-view-2').style.display = 'none';
+    }
+    function showExamples() {
     document.getElementById('modal-view-1').style.display = 'none';
     document.getElementById('modal-view-2').style.display = 'block';
 }
-
-function closeModal() {
-    document.getElementById('car-size-guide-modal').style.display = 'none';
-}
-
-function toggleCart(productId, card) {
+    function closeModal() {
+        document.getElementById('car-size-guide-modal').style.display = 'none';
+    }
+    function toggleCart(productId, card) {
     jQuery.ajax({
         url: '<?php echo admin_url('admin-ajax.php'); ?>',
         method: 'POST',
@@ -1044,54 +1034,44 @@ function toggleCart(productId, card) {
     });
 }
 
-// حفظ خيارات المستخدم في localStorage
-function saveUserSelection() {
-    const userSelection = {
-        carSize: selectedCarSize,
-        category: selectedCategory
-    };
-    localStorage.setItem('userSelection', JSON.stringify(userSelection));
-}
+    // حفظ خيارات المستخدم في localStorage
+    function saveUserSelection(key, value) {
+        let userSelection = JSON.parse(localStorage.getItem('userSelection')) || {};
+        userSelection[key] = value;
+        localStorage.setItem('userSelection', JSON.stringify(userSelection));
+    }
 
-// استعادة خيارات المستخدم من localStorage
-function restoreUserSelection() {
+    // استعادة خيارات المستخدم من localStorage
+   function restoreUserSelection() {
     const savedSelection = JSON.parse(localStorage.getItem('userSelection'));
     if (savedSelection) {
-        // استعادة حجم السيارة
         if (savedSelection.carSize) {
             selectedCarSize = savedSelection.carSize;
             document.querySelectorAll('.ltb-car-size-input-option').forEach(option => {
                 if (option.getAttribute('data-car-size') === selectedCarSize) {
                     option.classList.add('selected');
-                } else {
-                    option.classList.remove('selected');
                 }
             });
         }
 
-        // استعادة الكاتيجوري
         if (savedSelection.category) {
             selectedCategory = savedSelection.category;
             document.querySelectorAll('.category-btn').forEach(btn => {
                 if (btn.getAttribute('data-category') === selectedCategory) {
                     btn.classList.add('selected');
-                } else {
-                    btn.classList.remove('selected');
                 }
             });
         }
-
-        // استعادة المنتجات المصنفة
-        fetchFilteredProducts();
     }
 }
 
-// استدعاء استعادة الخيارات عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function () {
-    restoreUserSelection();
-});
-
-function updateCheckoutVisibility() {
+    
+    // استدعاء استعادة الخيارات عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function () {
+        restoreUserSelection();
+    });
+    
+    function updateCheckoutVisibility() {
     jQuery.ajax({
         url: '<?php echo admin_url('admin-ajax.php'); ?>',
         method: 'POST',
@@ -1102,23 +1082,21 @@ function updateCheckoutVisibility() {
 
             if (response.success) {
                 if (response.data.has_items) {
-                    checkoutSection.style.display = 'block'; // عرض Checkout
-                } else {
-                    checkoutSection.style.display = 'none'; // إخفاء Checkout
-                    // تم إزالة التنبيه الخاص بالسلة الفارغة
-                }
+                    checkoutSection.style.display = 'block'; }
+                // } else {
+                //     checkoutSection.style.display = 'none'; // إخفاء Checkout
+                //     // تم إزالة التنبيه الخاص بالسلة الفارغة
+                // }
             }
         },
         error: function () {
             console.error('خطأ في التحقق من حالة السلة.');
         }
     });
+
 }
-
-
-
     // تحديث حالة السلة
-function updateCheckoutSection() {
+    function updateCheckoutSection() {
     jQuery.ajax({
         url: '<?php echo admin_url('admin-ajax.php'); ?>',
         method: 'POST',
@@ -1142,22 +1120,21 @@ function updateCheckoutSection() {
     });
 }
 
-// عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function () {
+    // عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function () {
     updateCheckoutVisibility(); // التحقق من حالة السلة عند التحميل
 });
 
+    // تحديث حالة السلة عند إضافة أو إزالة منتجات
+    document.addEventListener('click', function (event) {
+        if (event.target.matches('.product-card')) {
+            setTimeout(function () {
+                updateCheckoutSection();
+            }, 500); // تأخير بسيط لضمان تنفيذ الطلب
+        }
+    });
 
-// تحديث حالة السلة عند إضافة أو إزالة منتجات
-document.addEventListener('click', function (event) {
-    if (event.target.matches('.product-card')) {
-        setTimeout(function () {
-            updateCheckoutSection();
-        }, 500); // تأخير بسيط لضمان تنفيذ الطلب
-    }
-});
-
-   document.querySelectorAll('.time-btn').forEach(button => {
+    document.querySelectorAll('.time-btn').forEach(button => {
     button.addEventListener('click', function () {
         document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('selected-time'));
         this.classList.add('selected-time');
@@ -1171,7 +1148,7 @@ document.addEventListener('click', function (event) {
     });
 });
  
-document.getElementById('branch-select').addEventListener('change', function () {
+    document.getElementById('branch-select').addEventListener('change', function () {
     if (this.value) {
         // أظهر قسم التقويم والوقت
         document.getElementById('calendar-time-container').style.display = 'flex';
@@ -1196,9 +1173,7 @@ document.getElementById('branch-select').addEventListener('change', function () 
         });
     }
 });
-
-
-document.getElementById('branch-select').addEventListener('change', function () {
+    document.getElementById('branch-select').addEventListener('change', function () {
     if (this.value) {
         document.getElementById('calendar-container').style.display = 'block';
         document.getElementById('time-container').style.display = 'block';
@@ -1220,8 +1195,6 @@ document.getElementById('branch-select').addEventListener('change', function () 
         });
     }
 });
-
-
 
     let branchesByRegion = {
     "الرياض": [
@@ -1245,7 +1218,7 @@ document.getElementById('branch-select').addEventListener('change', function () 
     ]
 };
 
-function updateBranches() {
+    function updateBranches() {
     let region = document.getElementById('region-select').value;
     let branchSelect = document.getElementById('branch-select');
     branchSelect.innerHTML = '<option value="" disabled selected>اختر الفرع</option>';
@@ -1263,7 +1236,7 @@ function updateBranches() {
     }
 }
 
-document.getElementById('branch-select').addEventListener('change', function() {
+    document.getElementById('branch-select').addEventListener('change', function() {
     if (this.value) {
         document.getElementById('calendar-container').style.display = 'block';
 
@@ -1286,14 +1259,15 @@ document.getElementById('branch-select').addEventListener('change', function() {
     }
 });
 
-        let selectedCarSize = '';
-        let selectedCategory = '';
+    let selectedCarSize = '';
+    let selectedCategory = '';
 
-        function selectCarSize(element) {
+    function selectCarSize(element) {
             document.querySelectorAll('.ltb-car-size-input-option').forEach(option => option.classList.remove('selected'));
             element.classList.add('selected');
             selectedCarSize = element.getAttribute('data-car-size');
-
+             saveUserSelection('carSize', selectedCarSize);
+            console.log(selectedCarSize)
             // SweetAlert2 Message
             Swal.fire({
                 icon: 'success',
@@ -1303,11 +1277,12 @@ document.getElementById('branch-select').addEventListener('change', function() {
 
             fetchFilteredProducts();
         }
-
-        function selectCategory(element) {
+    function selectCategory(element) {
             document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
             selectedCategory = element.getAttribute('data-category');
+            console.log(selectedCategory);
+            saveUserSelection('category', selectedCategory);
 
             // SweetAlert2 Message
             Swal.fire({
@@ -1318,8 +1293,9 @@ document.getElementById('branch-select').addEventListener('change', function() {
 
             fetchFilteredProducts();
         }
+       
 
-function fetchFilteredProducts() {
+    function fetchFilteredProducts() {
     if (selectedCarSize && selectedCategory) {
         console.log('جاري جلب المنتجات...');
         jQuery.ajax({
@@ -1345,27 +1321,29 @@ function fetchFilteredProducts() {
     }
 }
 
-function refreshWooCommerceFragments() {
+    function refreshWooCommerceFragments() {
     jQuery.ajax({
         url: '/?wc-ajax=get_refreshed_fragments',
         method: 'POST',
-        success: function(response) {
+        success: function (response) {
             if (response && response.fragments) {
-                // تحديث الشظايا (fragments) الخاصة بـ WooCommerce
-                jQuery.each(response.fragments, function(key, value) {
+                // تحديث العناصر الديناميكية
+                jQuery.each(response.fragments, function (key, value) {
                     jQuery(key).replaceWith(value);
                 });
 
-                console.log('تم تحديث WooCommerce Fragments بنجاح.');
+                console.log('تم تحديث WooCommerce Fragments.');
+
+                // التحقق من حالة السلة لتحديث ظهور WooCommerce Checkout
+               // updateWooCommerceCheckout();
             }
         },
-        error: function() {
-            console.error('خطأ أثناء تحديث WooCommerce Fragments.');
+        error: function () {
+            console.error('خطأ في تحديث WooCommerce Fragments.');
         }
     });
 }
-
-function updateWooCommerceCheckout() {
+    function updateWooCommerceCheckout() {
     // تحديث قسم WooCommerce Checkout
     const checkoutWrapper = jQuery('.woocommerce-checkout');
     if (checkoutWrapper.length > 0) {
@@ -1381,8 +1359,7 @@ function updateWooCommerceCheckout() {
         }
     }
 }
-
-        function addProductCardClickEvents() {
+    function addProductCardClickEvents() {
             document.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', function() {
                     toggleCart(card.getAttribute('data-product-id'), card);
@@ -1390,7 +1367,7 @@ function updateWooCommerceCheckout() {
             });
         }
 
-        
+
     </script>
     <?php
     return ob_get_clean();
