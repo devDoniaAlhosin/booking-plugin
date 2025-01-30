@@ -149,6 +149,152 @@ function enqueue_custom_scripts() {
 }
 add_action('wp_enqueue_scripts', 'enqueue_custom_scripts');
 
+
+// Multistage Select Script and css
+function my_custom_inline_styles_scripts() {
+    ?>
+    <style>
+
+        .step-indicator {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .step-icon {
+          font-size: 3rem;
+          color: #0c0a09;
+        }
+        
+        .step-title {
+          font-weight: bold;
+          margin-top: 10px;
+          font-size: 1.1rem;
+        }
+        
+        .step-content {
+          display: none;
+        }
+        
+        .step-content.active {
+          display: block;
+        }
+        
+        .step-indicator {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        
+        .step {
+          display: inline-block;
+          width: 22%;
+          text-align: center;
+        }
+        
+        .step.active .step-icon {
+          color: #4dc1ec;
+        }
+        
+        .hd-sub-text {
+          font-size: 35px;
+          color: #4dc1ec;
+          font-weight: 800;
+        }
+        .btn-group {
+          margin-top: 20px;
+          gap: 15px;
+          justify-content: space-between !important;
+        }
+        .custom-btn {
+          width: 100px;
+          height: 50px;
+          border-radius: 25px;
+          font-size: 1rem;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          border: 1px solid #4dc1ec;
+          background-color: #4dc1ec;
+          color: white;
+        }
+        .custom-btn:hover {
+          background-color: #1c1917;
+          border: 1px solid #1c1917;
+          transition: all ease-in-out 0.4s;
+        }
+        
+        @media (max-width: 768px) {
+          .hd-sub-text {
+            font-size: 25px;
+          }
+          .step-title {
+            font-size: 11px;
+          }
+          .step {
+            width: 23%;
+            margin-bottom: 15px;
+          }
+        
+          .btn-group .btn {
+            margin-bottom: 10px;
+          }
+        }
+
+
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+              let currentStep = 1;
+              const totalSteps = 4;
+            
+              document.getElementById("nextBtn").addEventListener("click", function () {
+              if (currentStep < totalSteps) {
+                showStep(++currentStep);
+              }
+              toggleButtons();
+            });
+            
+            document.getElementById("prevBtn").addEventListener("click", function () {
+              if (currentStep > 1) {
+                showStep(--currentStep);
+              }
+              toggleButtons();
+            });
+            
+            function toggleButtons() {
+              const nextBtn = document.getElementById("nextBtn");
+              const bookNowBtn = document.getElementById("bookNowBtn");
+            
+              if (currentStep === totalSteps) {
+                nextBtn.classList.add("d-none");
+                bookNowBtn.classList.remove("d-none");
+              } else {
+                nextBtn.classList.remove("d-none");
+                bookNowBtn.classList.add("d-none");
+              }
+            }
+            
+            function showStep(step) {
+              document.querySelectorAll(".step-content").forEach((content) => {
+                content.classList.remove("active");
+              });
+              document.querySelector(`[data-step="${step}"]`).classList.add("active");
+            
+              document.querySelectorAll(".step").forEach((stepEl, index) => {
+                stepEl.classList.toggle("active", index + 1 === step);
+              });
+            }
+
+        });
+    </script>
+    <?php
+}
+add_action('wp_footer', 'my_custom_inline_styles_scripts');
+
+
+
+
 // Shortcode to display car size and category selection
 add_shortcode('car_size_and_category_selection', 'display_car_size_and_category_selection');
 function display_car_size_and_category_selection() {
@@ -157,150 +303,170 @@ function display_car_size_and_category_selection() {
     <section class="ltb-section ltb-step-01 ltb-section-bg-black ltb-bg-cover" id="ltb-step-01">
         <div class="container custom-container">
             <div id="hd-container" style="width:100%">
-       <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
-    <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-    <div id="hd-text-container">
-        <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">مقاس السيارة</div>
-        <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار حجم سيارتك</div>
-    </div>
-    <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-</div>
-
-
-            <div id="ltb-car-size-input" class="car-size-container">
-                <input type="hidden" id="selected_car_size" name="selected_car_size" value="">
-                <div class="ltb-car-size-input-option" data-car-size="سيارة صغيرة" onclick="selectCarSize(this)">
-                    <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-3copy.webp">
-                    <span class="car-size-label"><strong>صغير</strong></span>
+                <!--Indicator -->
+                <div class="step-indicator">
+                      <div class="step active">
+                        <i class="fas fa-car step-icon"></i>
+                        <div class="step-title">مقاس السيارة</div>
+                      </div>
+                      <div class="step">
+                        <i class="fas fa-tools step-icon"></i>
+                        <div class="step-title">اختار الخدمة المطلوبة</div>
+                      </div>
+                      <div class="step">
+                        <i class="fas fa-map-marker-alt step-icon"></i>
+                        <div class="step-title">قم باختيار الوقت والفرع</div>
+                      </div>
+                      <div class="step">
+                        <i class="fas fa-clipboard-check step-icon"></i>
+                        <div class="step-title">بيانات الحجز</div>
+                      </div>
                 </div>
-                <div class="ltb-car-size-input-option" data-car-size="سيارة وسط" onclick="selectCarSize(this)">
-                    <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-2copy.webp">
-                    <span class="car-size-label"><strong>وسط</strong></span>
-                </div>
-                <div class="ltb-car-size-input-option" data-car-size="سيارة كبيرة" onclick="selectCarSize(this)">
-                    <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-copy-copy.webp">
-                    <span class="car-size-label"><strong>كبير</strong></span>
-                </div>
+                 <form id="multiStepForm">
+                    <div class="step-content active" data-step="1">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
+                            <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                            <div id="hd-text-container">
+                                <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">مقاس السيارة</div>
+                                    <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار حجم سيارتك</div>
+                            </div>
+                            <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                        </div>
+                        <div id="ltb-car-size-input" class="car-size-container">
+                            <input type="hidden" id="selected_car_size" name="selected_car_size" value="">
+                            <div class="ltb-car-size-input-option" data-car-size="سيارة صغيرة" onclick="selectCarSize(this)">
+                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-3copy.webp">
+                            <span class="car-size-label"><strong>صغير</strong></span>
+                        </div>
+                        <div class="ltb-car-size-input-option" data-car-size="سيارة وسط" onclick="selectCarSize(this)">
+                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-2copy.webp">
+                            <span class="car-size-label"><strong>وسط</strong></span>
+                        </div>
+                        <div class="ltb-car-size-input-option" data-car-size="سيارة كبيرة" onclick="selectCarSize(this)">
+                            <img decoding="async" class="ltb-car-size-input-media" src="https://darkgoldenrod-cormorant-325396.hostingersite.com/wp-content/uploads/2025/01/1LARGE-copy-copy.webp">
+                            <span class="car-size-label"><strong>كبير</strong></span>
+                        </div>
+                    </div>
+                     <!--ختار الخدمة المطلوبة-->
+                    <div class="step-content " data-step="2">
+                        <div id="category-selection" class="category-container">
+                            <div id="hd-container" style="width:100%">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
+                                    <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                                    <div id="hd-text-container">
+                                        <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">اختار الخدمة المطلوبة</div>
+                                        <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار الخدمة</div>
+                                    </div>
+                                    <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                                </div>                   
+                            <div class="categories-wrapper">
+                                <!-- حماية -->
+                                <button class="category-btn" data-category="حماية" onclick="selectCategory(this)">
+                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/PPF-icon-3.svg" alt="حماية">
+                                    <span>حماية</span>
+                                </button>
+                                <!-- عازل حراري نانوسيراميك -->
+                                <button class="category-btn" data-category="عازل حراري نانوسيراميك" onclick="selectCategory(this)">
+                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/TPF-icon-3.svg" alt="عازل حراري نانوسيراميك">
+                                    <span>عازل حراري نانوسيراميك</span>
+                                </button>
+                                <!-- نانو سيراميك -->
+                                <button class="category-btn" data-category="نانو سيراميك" onclick="selectCategory(this)">
+                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/Nano-icon-3.svg" alt="نانو سيراميك">
+                                    <span>نانو سيراميك</span>
+                                </button>
+                                <!-- تلميع -->
+                                <button class="category-btn" data-category="تلميع" onclick="selectCategory(this)">
+                                    <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/polish-icon-2.svg" alt="تلميع">
+                                    <span>تلميع</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="filtered-products" class="filtered-products" style="margin-top: 30px;">                
+                            <div id="products-container"></div>
+                        </div>
+                    </div>
+                    <!-- اختيار المنطقة والفرع -->
+                    <div class="step-content " data-step="3">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
+                            <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                            <div id="hd-text-container">
+                                <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">قم باختيار الوقت والفرع</div>
+                                <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار الفرع</div>
+                            </div>
+                            <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; width: 100%;">
+                            <label for="region-select" style="color: black;">قم باختيار المنطقة</label>
+                            <select id="region-select" onchange="updateBranches()" style="width: 200px; padding: 10px; margin-top: 5px;">
+                                <option value="" disabled selected>أختار المنطقة</option>
+                                <option value="الرياض">الرياض</option>
+                                <option value="المدينة المنورة">المدينة المنورة</option>
+                                <option value="المنطقة الشرقية">المنطقة الشرقية</option>
+                                <option value="القصيم">القصيم</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; width: 100%;">
+                            <label for="branch-select" style="color: black;">قم باختيار الفرع</label>
+                            <select id="branch-select" disabled style="width: 200px; padding: 10px; margin-top: 5px;">
+                                <option value="" disabled selected>أختر الفرع</option>
+                            </select>
+                        </div>            
+                        <div id="calendar-time-container" style="display: none; justify-content: center; gap: 50px; margin-top: 30px;">
+                            <!-- التقويم -->
+                            <div id="calendar-container" style="text-align: center;">
+                                <h4 style="color: black;">التاريخ</h4>
+                                <div id="datepicker"></div>
+                            </div>
+                            <div id="time-container" style="text-align: center;">
+                                <h4 style="color: white;">الوقت</h4>
+                                <div id="am-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px;">
+                                    <button class="time-btn" data-time="9:00 AM">AM 9:00</button>
+                                    <button class="time-btn" data-time="10:00 AM">AM 10:00</button>
+                                    <button class="time-btn" data-time="11:00 AM">AM 11:00</button>
+                                </div>
+                                <div id="pm-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                                    <button class="time-btn" data-time="4:00 PM">PM 4:00</button>
+                                    <button class="time-btn" data-time="5:00 PM">PM 5:00</button>
+                                    <button class="time-btn" data-time="6:00 PM">PM 6:00</button>
+                                    <button class="time-btn" data-time="7:00 PM">PM 7:00</button>
+                                    <button class="time-btn" data-time="8:00 PM">PM 8:00</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-content " data-step="4">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
+                                <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                                <div id="hd-text-container">
+                                    <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">بيانات الحجز</div>
+                                    <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم بتعبئة معلوماتك لتأكيد الحجز</div>
+                                </div>
+                                <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
+                        </div>
+                        <?php
+                        // عرض نموذج الدفع الخاص بـ WooCommerce
+                        echo do_shortcode('[woocommerce_checkout]');
+                        ?>
+                    </div> 
+                    <div class="btn-group mt-4">
+                            <button type="button" class="custom-btn" id="prevBtn">
+                            <i class="fa-solid fa-chevron-right ml-2"></i> السابق
+                            </button>
+                            <button type="button" class="custom-btn" id="nextBtn">
+                            التالي <i class="fa-solid fa-chevron-left mr-2"></i>
+                            </button>
+                            <button
+                            type="submit"
+                            class="btn-success custom-btn d-none"
+                            id="bookNowBtn"
+                            >
+                            احجز الان
+                            </button>
+                    </div>
+                </form>
             </div>
-
-
-           <div id="category-selection" class="category-container">
-       <div id="hd-container" style="width:100%">
-     <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
-    <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-    <div id="hd-text-container">
-        <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">اختار الخدمة المطلوبة</div>
-        <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار الخدمة</div>
-    </div>
-    <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-</div>
-
-                
-    <div class="categories-wrapper">
-        <!-- حماية -->
-        <button class="category-btn" data-category="حماية" onclick="selectCategory(this)">
-            <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/PPF-icon-3.svg" alt="حماية">
-            <span>حماية</span>
-        </button>
-        <!-- عازل حراري نانوسيراميك -->
-        <button class="category-btn" data-category="عازل حراري نانوسيراميك" onclick="selectCategory(this)">
-            <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/TPF-icon-3.svg" alt="عازل حراري نانوسيراميك">
-            <span>عازل حراري نانوسيراميك</span>
-        </button>
-        <!-- نانو سيراميك -->
-        <button class="category-btn" data-category="نانو سيراميك" onclick="selectCategory(this)">
-            <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/Nano-icon-3.svg" alt="نانو سيراميك">
-            <span>نانو سيراميك</span>
-        </button>
-        <!-- تلميع -->
-        <button class="category-btn" data-category="تلميع" onclick="selectCategory(this)">
-            <img src="https://dettaglioauto.sa/wp-content/uploads/2019/06/polish-icon-2.svg" alt="تلميع">
-            <span>تلميع</span>
-        </button>
-    </div>
-</div>
-
-
-            <div id="filtered-products" class="filtered-products" style="margin-top: 30px;">
-             
-                <div id="products-container"></div>
-            </div>
         </div>
-        
-          <div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
-    <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-    <div id="hd-text-container">
-        <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">قم باختيار الوقت والفرع</div>
-        <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم باختيار الفرع</div>
-    </div>
-    <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-</div>
-
-    
-    <!-- اختيار المنطقة والفرع -->
-<div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; width: 100%;">
-        <div>
-            <label for="region-select" style="color: black;">قم باختيار المنطقة</label>
-            <select id="region-select" onchange="updateBranches()" style="width: 200px; padding: 10px; margin-top: 5px;">
-                <option value="" disabled selected>أختار المنطقة</option>
-                <option value="الرياض">الرياض</option>
-                <option value="المدينة المنورة">المدينة المنورة</option>
-                <option value="المنطقة الشرقية">المنطقة الشرقية</option>
-                <option value="القصيم">القصيم</option>
-            </select>
-        </div>
-        <div>
-            <label for="branch-select" style="color: black;">قم باختيار الفرع</label>
-            <select id="branch-select" disabled style="width: 200px; padding: 10px; margin-top: 5px;">
-                <option value="" disabled selected>أختر الفرع</option>
-            </select>
-        </div>
-    </div>
-
- <div id="calendar-time-container" style="display: none; justify-content: center; gap: 50px; margin-top: 30px;">
-    <!-- التقويم -->
-    <div id="calendar-container" style="text-align: center;">
-        <h4 style="color: black;">التاريخ</h4>
-        <div id="datepicker"></div>
-    </div>
-
-<div id="time-container" style="text-align: center;">
-    <h4 style="color: white;">الوقت</h4>
-    <div id="am-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 15px;">
-        <button class="time-btn" data-time="9:00 AM">AM 9:00</button>
-        <button class="time-btn" data-time="10:00 AM">AM 10:00</button>
-        <button class="time-btn" data-time="11:00 AM">AM 11:00</button>
-    </div>
-    <div id="pm-time-buttons" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-        <button class="time-btn" data-time="4:00 PM">PM 4:00</button>
-        <button class="time-btn" data-time="5:00 PM">PM 5:00</button>
-        <button class="time-btn" data-time="6:00 PM">PM 6:00</button>
-        <button class="time-btn" data-time="7:00 PM">PM 7:00</button>
-        <button class="time-btn" data-time="8:00 PM">PM 8:00</button>
-    </div>
-</div>
-
-
-
-</div>
-<div style="display: flex; align-items: center; justify-content: center; gap: 20px; text-align: center; margin: 20px 0;">
-    <hr id="hd-hr-left" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-    <div id="hd-text-container">
-        <div id="hd-main-text" style="font-size: 24px; font-weight: bold; color: #000;">بيانات الحجز</div>
-        <div id="hd-sub-text" style="font-size: 14px; color: #4dc1ec;">من فضلك قم بتعبئة معلوماتك لتأكيد الحجز</div>
-    </div>
-    <hr id="hd-hr-right" style="flex: 1; border: 1px solid #4dc1ec; margin: 0;">
-</div>
-
-                    <?php
-                    // عرض نموذج الدفع الخاص بـ WooCommerce
-                    echo do_shortcode('[woocommerce_checkout]');
-                    ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
     </section>
 
 
@@ -712,8 +878,6 @@ margin-block: 20px;
         grid-template-columns: repeat(1, 1fr); /* منتج واحد في الشاشات الصغيرة */
     }
 }
-
-
     </style>
 
     <script>
